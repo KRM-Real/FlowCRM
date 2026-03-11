@@ -1,3 +1,5 @@
+from typing import Any, cast
+
 from rest_framework import serializers
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -18,13 +20,11 @@ class LogoutSerializer(serializers.Serializer):
     refresh = serializers.CharField()
 
     def save(self, **kwargs):
-        refresh_token = self.validated_data.get("refresh")
-
-        if not refresh_token:
-            raise serializers.ValidationError({"refresh": "Refresh token is required"})
+        validated_data = cast(dict[str, Any], self.validated_data)
+        refresh_token = cast(str, validated_data["refresh"])
 
         try:
-            token = RefreshToken(refresh_token)
+            token = RefreshToken(refresh_token)  # type: ignore[arg-type]
             token.blacklist()
         except TokenError as exc:
             raise serializers.ValidationError(
