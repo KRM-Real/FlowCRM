@@ -29,10 +29,35 @@ class Membership(TimeStampedModel):
         on_delete= models.CASCADE,
         related_name= "memberships",
     )
-    role = models.CharField(max_length=20, choices=Role.choices)
+    role = models.CharField(
+        max_length=20, 
+        choices=Role.choices,
+        default=Role.REP)
     
     class Meta:
-        unique_together = ("user", "organization")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "organization"],
+                name="unique_user_organization_membership"
+            )
+        ]
+        indexes = [
+            models.Index(fields=["organization", "role"]),
+            models.Index(fields=["user", "role"]),
+        ]
         
     def __str__(self) -> str:
         return f"{self.user.email} - {self.organization.name} ({self.role})"
+    
+    
+    @property
+    def is_manager(self) -> bool:
+        return self.role == self.Role.MANAGER
+    
+    @property
+    def is_rep(self) -> bool:
+        return self.role == self.Role.REP
+    
+    @property
+    def is_manager_or_admin(self) -> bool:
+        return self.role in {self.Role.ADMIN, self.Role.MANAGER}
