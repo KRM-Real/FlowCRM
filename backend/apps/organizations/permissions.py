@@ -11,7 +11,7 @@ from apps.organizations.services import (
 class BaseOrganizationPermission(BasePermission):
     message = "You do not have permission to access this organization."
 
-    def get_organization(self, view):
+    def get_organization(self, view) -> Organization | None:
         organization_id = view.kwargs.get("organization_id")
         if not organization_id:
             return None

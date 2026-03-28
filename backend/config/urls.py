@@ -22,5 +22,10 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    
+    # existing apps
     path("api/auth/", include("apps.accounts.urls")),
+
+    # new organizations routes
+    path("api/", include("apps.organizations.urls")),
 ]
