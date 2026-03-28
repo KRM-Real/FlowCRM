@@ -3,6 +3,7 @@ from rest_framework import serializers
 
 from apps.organizations.models import Membership
 
+
 User = get_user_model()
 
 
@@ -68,4 +69,40 @@ class MembershipCreateSerializer(serializers.ModelSerializer):
         return Membership.objects.create(
             organization=organization,
             **validated_data,
-        )   
+        )
+
+class MembershipUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Membership
+        fields = ["id", "role", "created_at", "updated_at"]
+        read_only_fields = ["id", "created_at", "updated_at"]
+
+    def validate_role(self, value):
+        valid_roles = [choice[0] for choice in Membership.Role.choices]
+        if value not in valid_roles:
+            raise serializers.ValidationError("Invalid role.")
+        return value
+
+    def validate(self, attrs):
+        instance = self.instance
+
+        if instance is None:
+            return attrs
+
+        new_role = attrs.get("role", instance.role)
+
+        if (
+            instance.role == Membership.Role.ADMIN
+            and new_role != Membership.Role.ADMIN
+        ):
+            admin_count = Membership.objects.filter(
+                organization=instance.organization,
+                role=Membership.Role.ADMIN,
+            ).count()
+
+            if admin_count <= 1:
+                raise serializers.ValidationError(
+                    {"role": "You cannot change the role of the last admin."}
+                )
+
+        return attrs
