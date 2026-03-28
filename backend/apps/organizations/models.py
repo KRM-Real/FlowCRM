@@ -59,5 +59,9 @@ class Membership(TimeStampedModel):
         return self.role == self.Role.REP
     
     @property
+    def is_admin(self) -> bool:
+        return self.role == self.Role.ADMIN
+    
+    @property
     def is_manager_or_admin(self) -> bool:
         return self.role in {self.Role.ADMIN, self.Role.MANAGER}
