@@ -1,29 +1,28 @@
-from rest_framework import status, viewsets
+from rest_framework import permissions, status, viewsets
 from rest_framework.response import Response
 
-from apps.leads.models import Lead
 from apps.leads.serializers import LeadSerializer
 from apps.leads.services import create_lead, update_lead
-from apps.leads.selectors import (
-    get_leads_by_organization,
-    get_lead_by_id,
-)
+from apps.leads.selectors import get_lead_by_id, get_leads_by_organization
 from apps.organizations.models import Organization
 from apps.organizations.permissions import BaseOrganizationPermission
+from rest_framework.permissions import IsAuthenticated
+from apps.organizations.permissions import IsOrganizationMember
 
+
+from django.shortcuts import get_object_or_404
 
 class LeadViewSet(viewsets.ViewSet):
-    permission_classes = [BaseOrganizationPermission]
+    permission_classes = [IsAuthenticated, IsOrganizationMember]
 
     def get_organization(self):
         organization_id = self.kwargs.get("organization_id")
-        return Organization.objects.filter(id=organization_id).first()
+        return get_object_or_404(Organization, id=organization_id)
 
     def list(self, request, organization_id=None):
         organization = self.get_organization()
 
         leads = get_leads_by_organization(organization=organization)
-
         serializer = LeadSerializer(leads, many=True)
         return Response(serializer.data)
 
@@ -104,5 +103,4 @@ class LeadViewSet(viewsets.ViewSet):
             )
 
         lead.delete()
-
         return Response(status=status.HTTP_204_NO_CONTENT)
