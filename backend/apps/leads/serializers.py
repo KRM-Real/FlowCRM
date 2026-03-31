@@ -8,8 +8,6 @@ class LeadSerializer(serializers.ModelSerializer):
         model = Lead
         fields = [
             "id",
-            "organization",
-            "created_by",
             "name",
             "email",
             "phone",
@@ -20,9 +18,6 @@ class LeadSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             "id",
-            "organization",
-            "created_by",
             "created_at",
             "updated_at",
         ]
-        

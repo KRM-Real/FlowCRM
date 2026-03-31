@@ -1,19 +1,32 @@
-from rest_framework import permissions, status, viewsets
-from rest_framework.response import Response
-
-from apps.leads.serializers import LeadSerializer
-from apps.leads.services import create_lead, update_lead
-from apps.leads.selectors import get_lead_by_id, get_leads_by_organization
-from apps.organizations.models import Organization
-from apps.organizations.permissions import BaseOrganizationPermission
+from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
-from apps.organizations.permissions import IsOrganizationMember
-
+from rest_framework.response import Response
 
 from django.shortcuts import get_object_or_404
 
+from apps.common.pagination import DefaultPagination
+from apps.leads.selectors import get_lead_by_id, get_leads_by_organization
+from apps.leads.serializers import LeadSerializer
+from apps.leads.services import create_lead, update_lead
+from apps.organizations.models import Organization
+from apps.organizations.permissions import (
+    IsOrganizationManagerOrAdmin,
+    IsOrganizationMember,
+)
+
+
 class LeadViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated, IsOrganizationMember]
+    pagination_class = DefaultPagination
+
+    def get_permissions(self):
+        if self.action in ["list", "retrieve"]:
+            permission_classes = [IsAuthenticated, IsOrganizationMember]
+        elif self.action in ["create", "partial_update"]:
+            permission_classes = [IsAuthenticated, IsOrganizationManagerOrAdmin]
+        else:
+            permission_classes = [IsAuthenticated]
+
+        return [permission() for permission in permission_classes]
 
     def get_organization(self):
         organization_id = self.kwargs.get("organization_id")
@@ -22,9 +35,20 @@ class LeadViewSet(viewsets.ViewSet):
     def list(self, request, organization_id=None):
         organization = self.get_organization()
 
-        leads = get_leads_by_organization(organization=organization)
-        serializer = LeadSerializer(leads, many=True)
-        return Response(serializer.data)
+        status_filter = request.query_params.get("status")
+        source_filter = request.query_params.get("source")
+
+        leads = get_leads_by_organization(
+            organization=organization,
+            status=status_filter,
+            source=source_filter,
+        )
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(leads, request, view=self)
+        serializer = LeadSerializer(page, many=True)
+
+        return paginator.get_paginated_response(serializer.data)
 
     def retrieve(self, request, pk=None, organization_id=None):
         organization = self.get_organization()
@@ -87,20 +111,3 @@ class LeadViewSet(viewsets.ViewSet):
         )
 
         return Response(LeadSerializer(updated_lead).data)
-
-    def destroy(self, request, pk=None, organization_id=None):
-        organization = self.get_organization()
-
-        lead = get_lead_by_id(
-            lead_id=pk,
-            organization=organization,
-        )
-
-        if not lead:
-            return Response(
-                {"detail": "Lead not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        lead.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)

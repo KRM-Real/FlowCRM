@@ -12,6 +12,7 @@ class LeadStatus(models.TextChoices):
     CONTACTED = "CONTACTED", "Contacted"
     QUALIFIED = "QUALIFIED", "Qualified"
     LOST = "LOST", "Lost"
+    WON = "WON", "Won"
     
 class LeadSource(models.TextChoices):
     MANUAL = "MANUAL", "Manual"
@@ -29,7 +30,9 @@ class Lead(models.Model):
     
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null= True,
+        blank= True,
         related_name="created_leads",
     )
     
