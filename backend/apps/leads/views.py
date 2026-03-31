@@ -2,20 +2,18 @@ from rest_framework import status, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from django.shortcuts import get_object_or_404
-
+from apps.common.mixins import OrganizationContextMixin
 from apps.common.pagination import DefaultPagination
 from apps.leads.selectors import get_lead_by_id, get_leads_by_organization
 from apps.leads.serializers import LeadSerializer
 from apps.leads.services import create_lead, update_lead
-from apps.organizations.models import Organization
 from apps.organizations.permissions import (
     IsOrganizationManagerOrAdmin,
     IsOrganizationMember,
 )
 
 
-class LeadViewSet(viewsets.ViewSet):
+class LeadViewSet(OrganizationContextMixin, viewsets.ViewSet):
     pagination_class = DefaultPagination
 
     def get_permissions(self):
@@ -27,10 +25,6 @@ class LeadViewSet(viewsets.ViewSet):
             permission_classes = [IsAuthenticated]
 
         return [permission() for permission in permission_classes]
-
-    def get_organization(self):
-        organization_id = self.kwargs.get("organization_id")
-        return get_object_or_404(Organization, id=organization_id)
 
     def list(self, request, organization_id=None):
         organization = self.get_organization()

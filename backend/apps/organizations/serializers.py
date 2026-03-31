@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 class MembershipListSerializer(serializers.ModelSerializer):
-    user_id = serializers.IntegerField(source="user.id", read_only=True)
+    user_id = serializers.UUIDField(source="user.id", read_only=True)
     user_email = serializers.EmailField(source="user.email", read_only=True)
     organization_id = serializers.IntegerField(source="organization.id", read_only=True)
 

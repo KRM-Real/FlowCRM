@@ -1,9 +1,8 @@
-from django.shortcuts import get_object_or_404
-
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
 
-from apps.organizations.models import Organization, Membership
+from apps.common.mixins import OrganizationContextMixin
+from apps.organizations.models import Membership
 from apps.organizations.permissions import IsOrganizationAdmin, IsOrganizationMember
 from apps.organizations.serializers import (
     MembershipCreateSerializer,
@@ -12,14 +11,13 @@ from apps.organizations.serializers import (
 )
 
 
-class OrganizationMembershipListCreateView(ListCreateAPIView):
+class OrganizationMembershipListCreateView(OrganizationContextMixin, ListCreateAPIView):
     queryset = Membership.objects.all()
 
     def get_queryset(self):
-        organization_id = self.kwargs["organization_id"]
-        return (
-            Membership.objects.filter(organization_id=organization_id)
-            .select_related("user", "organization")
+        return self.filter_organization_queryset(
+            Membership.objects.select_related("user", "organization")
+            .order_by("created_at", "id")
         )
 
     def get_serializer_class(self):
@@ -32,12 +30,6 @@ class OrganizationMembershipListCreateView(ListCreateAPIView):
             return [IsAuthenticated(), IsOrganizationAdmin()]
         return [IsAuthenticated(), IsOrganizationMember()]
 
-    def get_organization(self):
-        return get_object_or_404(
-            Organization,
-            id=self.kwargs["organization_id"],
-        )
-
     def get_serializer_context(self):
         context = super().get_serializer_context()
         context["organization"] = self.get_organization()
@@ -47,15 +39,14 @@ class OrganizationMembershipListCreateView(ListCreateAPIView):
         serializer.save()
 
 
-class OrganizationMembershipDetailView(RetrieveUpdateDestroyAPIView):
+class OrganizationMembershipDetailView(OrganizationContextMixin, RetrieveUpdateDestroyAPIView):
     queryset = Membership.objects.all()
     permission_classes = [IsAuthenticated, IsOrganizationAdmin]
 
     def get_queryset(self):
-        organization_id = self.kwargs["organization_id"]
-        return (
-            Membership.objects.filter(organization_id=organization_id)
-            .select_related("user", "organization")
+        return self.filter_organization_queryset(
+            Membership.objects.select_related("user", "organization")
+            .order_by("created_at", "id")
         )
 
     def get_serializer_class(self):
