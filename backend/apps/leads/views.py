@@ -19,7 +19,7 @@ class LeadViewSet(OrganizationContextMixin, viewsets.ViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             permission_classes = [IsAuthenticated, IsOrganizationMember]
-        elif self.action in ["create", "partial_update"]:
+        elif self.action in ["create", "partial_update", "destroy"]:
             permission_classes = [IsAuthenticated, IsOrganizationManagerOrAdmin]
         else:
             permission_classes = [IsAuthenticated]
@@ -30,17 +30,23 @@ class LeadViewSet(OrganizationContextMixin, viewsets.ViewSet):
         organization = self.get_organization()
 
         status_filter = request.query_params.get("status")
-        source_filter = request.query_params.get("source")
+        owner_filter = request.query_params.get("owner")
+        search_query = request.query_params.get("search")
 
         leads = get_leads_by_organization(
             organization=organization,
             status=status_filter,
-            source=source_filter,
+            owner=owner_filter,
+            search=search_query,
         )
 
         paginator = self.pagination_class()
         page = paginator.paginate_queryset(leads, request, view=self)
-        serializer = LeadSerializer(page, many=True)
+        serializer = LeadSerializer(
+            page,
+            many=True,
+            context={"organization": organization},
+        )
 
         return paginator.get_paginated_response(serializer.data)
 
@@ -58,13 +64,16 @@ class LeadViewSet(OrganizationContextMixin, viewsets.ViewSet):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        serializer = LeadSerializer(lead)
+        serializer = LeadSerializer(lead, context={"organization": organization})
         return Response(serializer.data)
 
     def create(self, request, organization_id=None):
         organization = self.get_organization()
 
-        serializer = LeadSerializer(data=request.data)
+        serializer = LeadSerializer(
+            data=request.data,
+            context={"organization": organization},
+        )
         serializer.is_valid(raise_exception=True)
 
         lead = create_lead(
@@ -74,7 +83,7 @@ class LeadViewSet(OrganizationContextMixin, viewsets.ViewSet):
         )
 
         return Response(
-            LeadSerializer(lead).data,
+            LeadSerializer(lead, context={"organization": organization}).data,
             status=status.HTTP_201_CREATED,
         )
 
@@ -96,6 +105,7 @@ class LeadViewSet(OrganizationContextMixin, viewsets.ViewSet):
             lead,
             data=request.data,
             partial=True,
+            context={"organization": organization},
         )
         serializer.is_valid(raise_exception=True)
 
@@ -104,4 +114,25 @@ class LeadViewSet(OrganizationContextMixin, viewsets.ViewSet):
             **serializer.validated_data,
         )
 
-        return Response(LeadSerializer(updated_lead).data)
+        return Response(
+            LeadSerializer(
+                updated_lead,
+                context={"organization": organization},
+            ).data
+        )
+
+    def destroy(self, request, pk=None, organization_id=None):
+        organization = self.get_organization()
+        lead = get_lead_by_id(
+            lead_id=pk,
+            organization=organization,
+        )
+
+        if not lead:
+            return Response(
+                {"detail": "Lead not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        lead.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

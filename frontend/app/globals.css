@@ -38,7 +38,8 @@ a {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -69,6 +70,10 @@ input {
 .dashboard-shell {
   border-radius: 2.25rem;
   padding: 2rem;
+}
+
+.dashboard-shell--wide {
+  width: min(100%, 88rem);
 }
 
 .eyebrow {
@@ -189,12 +194,181 @@ h2 {
   gap: 1rem;
 }
 
+.dashboard-actions,
+.dashboard-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .dashboard-card {
   margin-top: 2rem;
   border: 1px solid var(--border);
   border-radius: 1.5rem;
   background: var(--surface-strong);
   padding: 1.5rem;
+}
+
+.leads-toolbar,
+.modal-header,
+.modal-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.leads-filters {
+  margin-top: 1.5rem;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.leads-filters label,
+.lead-form label {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.leads-filters span,
+.lead-form span {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.leads-filters input,
+.leads-filters select,
+.lead-form input,
+.lead-form select {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--surface-strong);
+  padding: 0.9rem 1rem;
+  outline: none;
+}
+
+.leads-search {
+  min-width: min(100%, 18rem);
+}
+
+.leads-table-wrap {
+  margin-top: 1.5rem;
+  overflow-x: auto;
+}
+
+.leads-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+}
+
+.leads-table th,
+.leads-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 1rem 0.75rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.leads-table th {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.table-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.table-button {
+  min-width: 5.5rem;
+  padding: 0.65rem 0.95rem;
+}
+
+.table-button--danger,
+.danger-button {
+  border-color: rgba(185, 63, 56, 0.18);
+  background: rgba(185, 63, 56, 0.08);
+  color: var(--danger);
+}
+
+.status-pill {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 0.4rem 0.7rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.status-pill--new {
+  background: rgba(30, 92, 79, 0.1);
+  color: var(--accent-strong);
+}
+
+.status-pill--contacted {
+  background: rgba(25, 95, 150, 0.12);
+  color: #14527f;
+}
+
+.status-pill--qualified {
+  background: rgba(36, 107, 74, 0.12);
+  color: var(--success);
+}
+
+.status-pill--lost {
+  background: rgba(185, 63, 56, 0.12);
+  color: var(--danger);
+}
+
+.status-pill--won {
+  background: rgba(178, 122, 34, 0.14);
+  color: #7a5412;
+}
+
+.leads-empty {
+  margin-top: 1.5rem;
+  border: 1px dashed rgba(31, 26, 22, 0.14);
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(20, 18, 17, 0.42);
+}
+
+.modal-panel {
+  width: min(100%, 36rem);
+  border: 1px solid var(--border);
+  border-radius: 1.75rem;
+  background: var(--surface-strong);
+  padding: 1.5rem;
+  box-shadow: 0 24px 60px rgba(31, 26, 22, 0.2);
+}
+
+.modal-panel--compact {
+  width: min(100%, 28rem);
+}
+
+.lead-form {
+  margin-top: 1.25rem;
+  display: grid;
+  gap: 1rem;
 }
 
 .membership-grid {
@@ -230,5 +404,9 @@ h2 {
   .dashboard-shell {
     padding: 1.25rem;
     border-radius: 1.4rem;
+  }
+
+  .leads-table {
+    min-width: 720px;
   }
 }

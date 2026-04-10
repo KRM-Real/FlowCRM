@@ -14,9 +14,9 @@ class LeadAdmin(admin.ModelAdmin):
         "status",
         "source",
         "organization",
+        "owner",
         "created_by",
-        "created_at"
+        "created_at",
     )
-    list_filter = ("status", "source", "organization")
-    search_filter = ("name", "email", "phone")
-    
+    list_filter = ("status", "source", "organization", "owner")
+    search_fields = ("name", "email", "phone")

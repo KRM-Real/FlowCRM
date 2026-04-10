@@ -29,6 +29,13 @@ class Lead(OrganizationScopedModel):
         blank=True,
         related_name="created_leads",
     )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="owned_leads",
+    )
 
     name = models.CharField(max_length=255)
     email = models.EmailField(blank=True, null=True)
@@ -51,6 +58,7 @@ class Lead(OrganizationScopedModel):
         ordering = ["-created_at"]
         indexes = [
             models.Index(fields=["organization", "status"]),
+            models.Index(fields=["organization", "owner"]),
             models.Index(fields=["organization", "created_at"]),
             models.Index(fields=["organization", "email"]),
         ]

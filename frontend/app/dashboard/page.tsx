@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -93,6 +94,21 @@ export default function DashboardPage() {
             {isLoggingOut ? "Signing out..." : "Logout"}
           </button>
         </div>
+
+        <section className="dashboard-card">
+          <div className="dashboard-section-header">
+            <div>
+              <h2>Workspace</h2>
+              <p className="dashboard-muted">
+                Jump into the current sprint modules from your dashboard.
+              </p>
+            </div>
+
+            <Link className="primary-button" href="/dashboard/leads">
+              Open leads
+            </Link>
+          </div>
+        </section>
 
         <section className="dashboard-card">
           <h2>Organization access</h2>

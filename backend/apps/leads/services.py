@@ -11,6 +11,6 @@ def create_lead(*, organization, created_by, **data) -> Lead:
 def update_lead(*, lead: Lead, **data) -> Lead:
     for field, value in data.items():
         setattr(lead, field, value)
-    
+
     lead.save()
     return lead
